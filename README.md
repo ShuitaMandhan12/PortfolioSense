@@ -46,11 +46,17 @@ Free & Open-Source	No paywalls, no hidden costs
 
 🔥 How It’s Different from Other Portfolio Builders
 Feature	PortfolioSense	Other Portfolio Builders
-AI-Powered Content	✅ Auto-generates bios & descriptions	❌ Manual writing required
-Instant Hosting	✅ Free hosted link	❌ Often requires paid hosting
-Export Options	✅ HTML, JSON, live URL	❌ Limited to PDF or single format
-Open-Source	✅ Free & customizable	❌ Many are proprietary
-Developer-First	✅ Built for tech professionals	❌ Generic templates
+AI-Powered Content:	
+✅ Auto-generates bios & descriptions	❌ Manual writing required
+Instant Hosting:
+✅ Free hosted link	❌ Often requires paid hosting
+Export Options:
+✅ HTML, JSON, live URL	❌ Limited to PDF or single format
+Open-Source:
+✅ Free & customizable	❌ Many are proprietary
+Developer-First:
+✅ Built for tech professionals	❌ Generic templates
+
 👥 How It Engages People & Companies
 For Individuals
 📌 Stand out with AI-enhanced content
@@ -69,6 +75,7 @@ Backend	Node.js, Express
 Database	MongoDB
 AI	HuggingFace / GPT-J (Free tier)
 Hosting	Vercel / Netlify (Free)
+
 📈 Future Roadmap
 🔹 AI-Powered Resume Generator (Coming soon!)
 🔹 Custom Domain Support
