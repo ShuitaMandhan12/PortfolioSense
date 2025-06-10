@@ -66,6 +66,23 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+/* For smooth gradients */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Animation for gradient text */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.gradient-text {
+  background-size: 200% 200%;
+  animation: gradientShift 6s ease infinite;
+}
 
 @tailwind base;
 @tailwind components;

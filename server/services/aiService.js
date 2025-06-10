@@ -1,10 +1,13 @@
 const axios = require('axios');
 
-const generateAIContent = async ({ name, skills, projects }) => {
+const generateAIContent = async (portfolioData) => {
+  const { personalInfo, skills, projects } = portfolioData;
+  const name = personalInfo?.fullName || 'The candidate';
+  
   // Fallback content generator
   const generateFallbackContent = () => ({
-    bio: `${name} is a skilled ${skills[0]} developer with experience in ${skills.slice(1, 3).join(', ')}.`,
-    tagline: `Professional ${skills[0]} developer`,
+    bio: `${name} is a skilled ${skills[0] || 'software'} developer with experience in ${skills.slice(1, 3).join(', ') || 'various technologies'}.`,
+    tagline: `Professional ${skills[0] || 'software'} developer`,
     projects: projects.map(p => ({
       ...p,
       generatedDescription: p.description || "No description available"
@@ -13,8 +16,8 @@ const generateAIContent = async ({ name, skills, projects }) => {
 
   try {
     // Try HuggingFace API first
-    const bioPrompt = `Write a professional bio for ${name} who is skilled in ${skills.join(', ')}.`;
-    const taglinePrompt = `Create a catchy tagline for ${name}, a ${skills[0]} developer.`;
+    const bioPrompt = `Write a 100-word professional bio for ${name} who is skilled in ${skills.join(', ') || 'software development'}.`;
+    const taglinePrompt = `Create a catchy 5-7 word tagline for ${name}, a ${skills[0] || 'software'} developer.`;
     
     const [bioResponse, taglineResponse] = await Promise.allSettled([
       queryHuggingFace(bioPrompt),
@@ -25,16 +28,15 @@ const generateAIContent = async ({ name, skills, projects }) => {
     const projectsWithDescriptions = await Promise.all(
       projects.map(async project => {
         try {
-          const desc = await queryHuggingFace(`Rewrite professionally: "${project.description}"`);
+          const desc = await queryHuggingFace(
+            `Rewrite this project description professionally in 2-3 sentences: "${project.description}"`
+          );
           return {
             ...project,
             generatedDescription: desc || project.description
           };
         } catch {
-          return {
-            ...project,
-            generatedDescription: project.description
-          };
+          return project;
         }
       })
     );
@@ -42,10 +44,10 @@ const generateAIContent = async ({ name, skills, projects }) => {
     return {
       bio: bioResponse.status === 'fulfilled' && bioResponse.value 
         ? bioResponse.value 
-        : `${name} is a skilled ${skills[0]} developer.`,
+        : generateFallbackContent().bio,
       tagline: taglineResponse.status === 'fulfilled' && taglineResponse.value 
         ? taglineResponse.value 
-        : `Professional ${skills[0]} developer`,
+        : generateFallbackContent().tagline,
       projects: projectsWithDescriptions
     };
   } catch (error) {
@@ -56,16 +58,15 @@ const generateAIContent = async ({ name, skills, projects }) => {
 
 const queryHuggingFace = async (prompt) => {
   try {
-    // Try smaller model first
     const response = await axios.post(
-      'https://api-inference.huggingface.co/models/distilgpt2',
+      'https://api-inference.huggingface.co/models/gpt2',
       { inputs: prompt },
       {
         headers: {
-          'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY || 'YOUR_DEFAULT_KEY'}`,
+          'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
           'Content-Type': 'application/json'
         },
-        timeout: 5000
+        timeout: 8000
       }
     );
     
@@ -73,7 +74,7 @@ const queryHuggingFace = async (prompt) => {
       throw new Error(response.data.error);
     }
     
-    return response.data[0]?.generated_text?.replace(prompt, '')?.trim() || '';
+    return response.data[0]?.generated_text?.replace(prompt, '')?.trim() || null;
   } catch (error) {
     console.error('HuggingFace API error:', error.message);
     return null;

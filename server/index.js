@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const mongoose = require('mongoose');
+const connectDB = require('./config/db');
 const portfolioRoutes = require('./routes/portfolioRoutes');
 
 const app = express();
@@ -21,35 +21,30 @@ const corsOptions = {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200,
   credentials: true
 };
 
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
-
-// Routes
-app.use('/api', portfolioRoutes);
+app.use(express.urlencoded({ extended: true }));
 
 // Database connection
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => {
-    console.log('Connected to MongoDB');
-    // List all databases to verify connection
-    mongoose.connection.db.admin().listDatabases((err, result) => {
-      if (err) {
-        console.error('Error listing databases:', err);
-        return;
-      }
-      console.log('Available databases:', result.databases.map(db => db.name));
-    });
-  })
-  .catch(err => console.error('MongoDB connection error:', err));
-// Basic route
-app.get('/', (req, res) => {
-  res.send('PortfolioSense API');
+connectDB();
+
+// Routes
+app.use('/api/portfolio', portfolioRoutes);
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'healthy' });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Something went wrong!' });
 });
 
 const PORT = process.env.PORT || 5000;
